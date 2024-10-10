@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { fetchVideos, loginWithGoogle, logout } from "../api";
+import { Button } from "@/components/ui/button";
 
 const YouTubeAuth = () => {
   const [userData, setUserData] = useState(null);
@@ -41,6 +42,7 @@ const YouTubeAuth = () => {
       const fetchedVideos = await fetchVideos();
       setVideos(fetchedVideos);
     } catch (error) {
+      console.error("Error fetching videos:", error);
       setError("Failed to fetch videos. Please log in again.");
       handleLogout();
     }
@@ -57,38 +59,68 @@ const YouTubeAuth = () => {
       setVideos([]);
       navigate("/");
     } catch (error) {
+      console.error("Error logging out:", error);
       setError("Failed to log out. Please try again.");
     }
   };
 
+  const renderVideoItem = (video) => {
+    if (!video || !video.title || !video.videoId) {
+      console.error("Invalid video object:", video);
+      return null;
+    }
+
+    return (
+      <li key={video.videoId} className="mb-4">
+        <a
+          href={`https://www.youtube.com/watch?v=${video.videoId}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:underline"
+        >
+          {video.title}
+        </a>
+        <img
+          src={video.thumbnail}
+          alt={video.title}
+          className="max-w-[200px] mt-2 mb-2"
+        />
+        <Link to={`/summary/${video.videoId}`} state={{ title: video.title }}>
+          <Button className="bg-green-500 text-white mt-2">SummaryAI</Button>
+        </Link>
+      </li>
+    );
+  };
+
   return (
-    <div>
-      <h1>YouTube Authentication</h1>
+    <div className="p-8">
+      <h1 className="text-3xl font-bold mb-6">YouTube Authentication</h1>
       {!userData ? (
-        <button onClick={handleLogin}>Login with Google</button>
+        <Button onClick={handleLogin} className="bg-red-600 text-white">
+          Login with Google
+        </Button>
       ) : (
         <div>
-          <h2>Welcome, {userData.name}</h2>
-          <p>Email: {userData.email}</p>
-          <p>Channel ID: {userData.channel_id}</p>
-          <h3>Your Videos:</h3>
-          <ul>
-            {videos.map((video) => (
-              <li key={video.id.videoId}>
-                <a
-                  href={`https://www.youtube.com/watch?v=${video.id.videoId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {video.snippet.title}
-                </a>
-              </li>
-            ))}
-          </ul>
-          <button onClick={handleLogout}>Logout</button>
+          <h2 className="text-2xl font-semibold mb-4">
+            Welcome, {userData.name}
+          </h2>
+          <p className="mb-2">Email: {userData.email}</p>
+          <p className="mb-4">Channel ID: {userData.channel_id}</p>
+          <h3 className="text-xl font-semibold mb-4">Your Videos:</h3>
+          {videos && videos.length > 0 ? (
+            <ul className="list-none p-0">{videos.map(renderVideoItem)}</ul>
+          ) : (
+            <p>No videos found.</p>
+          )}
+          <Button
+            onClick={handleLogout}
+            className="bg-gray-500 text-white mt-4"
+          >
+            Logout
+          </Button>
         </div>
       )}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p className="text-red-500 mt-4">{error}</p>}
     </div>
   );
 };
