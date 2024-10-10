@@ -1,0 +1,14 @@
+fastapi 
+uvicorn 
+authlib
+python-dotenv
+httpx
+starlette
+itsdangerous
+
+google-auth==1.27.0
+google-auth-oauthlib==0.4.2
+requests-oauthlib
+requests
+
+pip install fastapi uvicorn requests python-dotenv google-auth google-auth-oauthlib
